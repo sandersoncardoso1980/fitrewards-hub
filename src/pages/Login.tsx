@@ -5,31 +5,32 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dumbbell, Flame } from 'lucide-react';
-import { TEST_CREDENTIALS } from '@/lib/mockData';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const { login, signup } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = login(email, password);
+    const success = await login(loginEmail, loginPassword);
     if (success) {
       navigate('/');
     }
   };
 
-  const fillAdmin = () => {
-    setEmail(TEST_CREDENTIALS.admin.email);
-    setPassword(TEST_CREDENTIALS.admin.password);
-  };
-
-  const fillUser = () => {
-    setEmail(TEST_CREDENTIALS.user.email);
-    setPassword(TEST_CREDENTIALS.user.password);
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await signup(signupEmail, signupPassword, signupName);
+    if (success) {
+      navigate('/');
+    }
   };
 
   return (
@@ -49,60 +50,86 @@ const Login = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
-              <Flame className="mr-2 h-4 w-4" />
-              Entrar
-            </Button>
-          </form>
-
-          <div className="mt-6 pt-6 border-t space-y-3">
-            <p className="text-sm text-muted-foreground text-center mb-3">
-              Contas de teste:
-            </p>
-            <div className="grid gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={fillAdmin}
-                className="w-full justify-start"
-              >
-                <span className="font-semibold">Admin:</span>
-                <span className="ml-2 text-muted-foreground">{TEST_CREDENTIALS.admin.email}</span>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={fillUser}
-                className="w-full justify-start"
-              >
-                <span className="font-semibold">Usuário:</span>
-                <span className="ml-2 text-muted-foreground">{TEST_CREDENTIALS.user.email}</span>
-              </Button>
-            </div>
-          </div>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="signup">Cadastro</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">Email</Label>
+                  <Input
+                    id="login-email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">Senha</Label>
+                  <Input
+                    id="login-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
+                  <Flame className="mr-2 h-4 w-4" />
+                  Entrar
+                </Button>
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="signup">
+              <form onSubmit={handleSignup} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Nome</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    placeholder="Seu nome"
+                    value={signupName}
+                    onChange={(e) => setSignupName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-email">Email</Label>
+                  <Input
+                    id="signup-email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="signup-password">Senha</Label>
+                  <Input
+                    id="signup-password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-gradient-primary hover:opacity-90 transition-opacity">
+                  <Flame className="mr-2 h-4 w-4" />
+                  Criar Conta
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
     </div>

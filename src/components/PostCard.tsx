@@ -1,31 +1,68 @@
 import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
-import { Post } from '@/types';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface PostCardProps {
-  post: Post;
+  post: any;
 }
 
 export function PostCard({ post }: PostCardProps) {
   const { user } = useAuth();
-  const [liked, setLiked] = useState(post.likedBy.includes(user?.id || ''));
-  const [likes, setLikes] = useState(post.likes);
+  const queryClient = useQueryClient();
+  const isLiked = post.post_likes?.some((like: any) => like.user_id === user?.id);
+  const [liked, setLiked] = useState(isLiked);
+  const [likesCount, setLikesCount] = useState(post.post_likes?.length || 0);
+
+  const likeMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id) throw new Error('Usuário não autenticado');
+
+      if (liked) {
+        // Unlike
+        const { error } = await supabase
+          .from('post_likes')
+          .delete()
+          .eq('post_id', post.id)
+          .eq('user_id', user.id);
+
+        if (error) throw error;
+      } else {
+        // Like
+        const { error } = await supabase
+          .from('post_likes')
+          .insert({
+            post_id: post.id,
+            user_id: user.id,
+          });
+
+        if (error) throw error;
+      }
+    },
+    onMutate: () => {
+      // Optimistic update
+      setLiked(!liked);
+      setLikesCount(liked ? likesCount - 1 : likesCount + 1);
+    },
+    onError: () => {
+      // Revert on error
+      setLiked(liked);
+      setLikesCount(liked ? likesCount + 1 : likesCount - 1);
+      toast.error('Erro ao curtir post');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['posts'] });
+    },
+  });
 
   const handleLike = () => {
-    if (!liked) {
-      setLikes(likes + 1);
-      setLiked(true);
-      toast.success('Post curtido!');
-    } else {
-      setLikes(likes - 1);
-      setLiked(false);
-    }
+    likeMutation.mutate();
   };
 
   const timeAgo = (date: string) => {
@@ -42,18 +79,18 @@ export function PostCard({ post }: PostCardProps) {
       <div className="p-4">
         <div className="flex items-center gap-3 mb-4">
           <Avatar>
-            <AvatarImage src={post.userAvatar} />
-            <AvatarFallback>{post.userName[0]}</AvatarFallback>
+            <AvatarImage src={post.profiles?.avatar_url} />
+            <AvatarFallback>{post.profiles?.name?.[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <p className="font-semibold">{post.userName}</p>
-            <p className="text-xs text-muted-foreground">{timeAgo(post.createdAt)}</p>
+            <p className="font-semibold">{post.profiles?.name}</p>
+            <p className="text-xs text-muted-foreground">{timeAgo(post.created_at)}</p>
           </div>
         </div>
       </div>
 
       <img
-        src={post.image}
+        src={post.image_url}
         alt="Post"
         className="w-full aspect-square object-cover"
       />
@@ -72,11 +109,11 @@ export function PostCard({ post }: PostCardProps) {
             <Heart
               className={cn('h-5 w-5', liked && 'fill-current')}
             />
-            <span className="font-semibold">{likes}</span>
+            <span className="font-semibold">{likesCount}</span>
           </Button>
         </div>
         <p className="text-sm">
-          <span className="font-semibold mr-2">{post.userName}</span>
+          <span className="font-semibold mr-2">{post.profiles?.name}</span>
           {post.caption}
         </p>
       </div>

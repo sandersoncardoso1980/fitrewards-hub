@@ -6,7 +6,7 @@ import { Home, Trophy, Users, LogOut, PlusCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Layout = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -48,7 +48,7 @@ const Layout = () => {
                 <Users className="h-4 w-4" />
                 Ranking
               </Button>
-              {user?.role === 'admin' && (
+              {isAdmin && (
                 <Button
                   variant="ghost"
                   onClick={() => navigate('/admin')}
@@ -64,14 +64,14 @@ const Layout = () => {
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex items-center gap-3">
               <div className="text-right">
-                <p className="text-sm font-medium">{user?.name}</p>
+                <p className="text-sm font-medium">{profile?.name || user?.email}</p>
                 <p className="text-xs text-muted-foreground">
-                  {user?.points} pontos
+                  {profile?.points || 0} pontos
                 </p>
               </div>
               <Avatar>
-                <AvatarImage src={user?.avatar} />
-                <AvatarFallback>{user?.name[0]}</AvatarFallback>
+                <AvatarImage src={profile?.avatar_url} />
+                <AvatarFallback>{profile?.name?.[0] || user?.email?.[0]}</AvatarFallback>
               </Avatar>
             </div>
             <Button
@@ -110,7 +110,7 @@ const Layout = () => {
           >
             <Users className="h-5 w-5" />
           </Button>
-          {user?.role === 'admin' && (
+          {isAdmin && (
             <Button
               variant="ghost"
               size="icon"

@@ -25,13 +25,13 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
-  const { user, isLoading } = useAuth();
+  const { isAdmin, isLoading } = useAuth();
   
   if (isLoading) {
     return <div className="min-h-screen flex items-center justify-center">Carregando...</div>;
   }
   
-  return user?.role === 'admin' ? <>{children}</> : <Navigate to="/" />;
+  return isAdmin ? <>{children}</> : <Navigate to="/" />;
 }
 
 const App = () => (

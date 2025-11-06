@@ -1,13 +1,23 @@
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Trophy, Medal, Award } from 'lucide-react';
-import { mockUsers } from '@/lib/mockData';
+import { Trophy, Medal, Award, Loader2 } from 'lucide-react';
 
 const Ranking = () => {
-  const rankedUsers = mockUsers
-    .filter(u => u.role === 'user')
-    .sort((a, b) => b.points - a.points);
+  const { data: rankedUsers, isLoading } = useQuery({
+    queryKey: ['ranking'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('points', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const getRankIcon = (index: number) => {
     if (index === 0) return <Trophy className="h-5 w-5 text-primary" />;
@@ -22,6 +32,14 @@ const Ranking = () => {
     return '';
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
@@ -33,7 +51,7 @@ const Ranking = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Trophy className="h-5 w-5 text-primary" />
-            Novembro 2025
+            {new Date().toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })}
           </CardTitle>
           <CardDescription>
             Os melhores performers do mês serão recompensados
@@ -41,33 +59,38 @@ const Ranking = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {rankedUsers.map((user, index) => (
-              <div
-                key={user.id}
-                className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-              >
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="flex items-center justify-center w-8">
-                    {getRankIcon(index) || (
-                      <span className="text-lg font-bold text-muted-foreground">
-                        {index + 1}
-                      </span>
-                    )}
+            {rankedUsers && rankedUsers.length > 0 ? (
+              rankedUsers.map((user: any, index: number) => (
+                <div
+                  key={user.id}
+                  className="flex items-center gap-4 p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="flex items-center justify-center w-8">
+                      {getRankIcon(index) || (
+                        <span className="text-lg font-bold text-muted-foreground">
+                          {index + 1}
+                        </span>
+                      )}
+                    </div>
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={user.avatar_url} />
+                      <AvatarFallback>{user.name?.[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="font-semibold">{user.name}</p>
+                    </div>
                   </div>
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={user.avatar} />
-                    <AvatarFallback>{user.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1">
-                    <p className="font-semibold">{user.name}</p>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
-                  </div>
+                  <Badge className={getRankBadge(index)}>
+                    {user.points} pts
+                  </Badge>
                 </div>
-                <Badge className={getRankBadge(index)}>
-                  {user.points} pts
-                </Badge>
+              ))
+            ) : (
+              <div className="text-center py-12 text-muted-foreground">
+                Nenhum usuário no ranking ainda
               </div>
-            ))}
+            )}
           </div>
         </CardContent>
       </Card>
