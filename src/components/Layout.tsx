@@ -2,7 +2,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Home, Trophy, Users, LogOut, PlusCircle } from 'lucide-react';
+import { Home, Trophy, Users, LogOut, PlusCircle, Camera } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const Layout = () => {
@@ -47,6 +47,14 @@ const Layout = () => {
               >
                 <Users className="h-4 w-4" />
                 Ranking
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/calorie-reader')}
+                className="gap-2"
+              >
+                <Camera className="h-4 w-4" />
+                Calorias
               </Button>
               {isAdmin && (
                 <Button
@@ -109,6 +117,13 @@ const Layout = () => {
             onClick={() => navigate('/ranking')}
           >
             <Users className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/calorie-reader')}
+          >
+            <Camera className="h-5 w-5" />
           </Button>
           {isAdmin && (
             <Button

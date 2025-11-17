@@ -1,1 +1,7 @@
 project_id = "soisqrvdymcwgwaxsrmp"
+
+[functions.setup-demo-users]
+verify_jwt = false
+
+[functions.analyze-calories]
+verify_jwt = true

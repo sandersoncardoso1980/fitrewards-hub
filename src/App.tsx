@@ -9,6 +9,7 @@ import Feed from "./pages/Feed";
 import Challenges from "./pages/Challenges";
 import Ranking from "./pages/Ranking";
 import Admin from "./pages/Admin";
+import CalorieReader from "./pages/CalorieReader";
 import Layout from "./components/Layout";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/" element={<Feed />} />
               <Route path="/challenges" element={<Challenges />} />
               <Route path="/ranking" element={<Ranking />} />
+              <Route path="/calorie-reader" element={<CalorieReader />} />
               <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             </Route>
             <Route path="*" element={<NotFound />} />
